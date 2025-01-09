@@ -1,8 +1,4 @@
-#define GLAD_GL_IMPLEMENTATION
-#include <glad/glad.h>
-
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
+#include "GLCommon.h"
 
 #include <glm/glm.hpp>
 #include <glm/vec3.hpp> // glm::vec3
@@ -20,6 +16,9 @@
 #include <fstream>      // "file" stream
 #include <string>
 
+#include "PlyFileLoaders.h"
+#include "Basic_Shader_Manager/cShaderManager.h"
+
 struct sVertex
 {
     glm::vec3 pos;      // position   or "float x, y, z"
@@ -29,26 +28,26 @@ struct sVertex
     // 1.0 = white 
 };
 
-static const char* vertex_shader_text =
-"#version 330\n"
-"uniform mat4 MVP;\n"
-"in vec3 vCol;\n"
-"in vec3 vPos;\n"
-"out vec3 color;\n"
-"void main()\n"
-"{\n"
-"    gl_Position = MVP * vec4(vPos, 1.0);\n"
-"    color = vCol;\n"
-"}\n";
-
-static const char* fragment_shader_text =
-"#version 330\n"
-"in vec3 color;\n"
-"out vec4 fragment;\n"
-"void main()\n"
-"{\n"
-"    fragment = vec4(color, 1.0);\n"
-"}\n";
+//static const char* vertex_shader_text =
+//"#version 330\n"
+//"uniform mat4 MVP;\n"
+//"in vec3 vCol;\n"
+//"in vec3 vPos;\n"
+//"out vec3 color;\n"
+//"void main()\n"
+//"{\n"
+//"    gl_Position = MVP * vec4(vPos, 1.0);\n"
+//"    color = vCol;\n"
+//"}\n";
+//
+//static const char* fragment_shader_text =
+//"#version 330\n"
+//"in vec3 color;\n"
+//"out vec4 fragment;\n"
+//"void main()\n"
+//"{\n"
+//"    fragment = vec4(color, 1.0);\n"
+//"}\n";
 
 
 glm::vec3 cameraEye = glm::vec3(0.0, 0.0, 4.0f);
@@ -97,124 +96,68 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
     }
 }
 
-void FileHandling(void);
-
 int main(void)
 {
-    /*
-    // This is on the stack; allocated at runtime.
-    sVertex vertices[3] =
-    {
-        { { -0.6f, -0.4f }, { 1.0f, 0.0f, 0.0f } },
-        { {  0.6f, -0.4f }, { 0.0f, 1.0f, 0.0f } },
-        { {  0.0f,  0.6f }, { 0.0f, 0.0f, 1.0f } }
-    };
+    
+    s3DFileData plyFileInfoBunny;
+    plyFileInfoBunny.fileName = "assets/models/bun_zipper.ply";
+    ReadPlyModelFromFile_xyz_ci(plyFileInfoBunny);
 
-    // This is on the heap; thus dynamically allocated at run time.
-    sVertex* pVertices = new sVertex[3];
-    pVertices[0] = { { -0.6f, -0.4f }, { 1.0f, 0.0f, 0.0f } };
-    pVertices[1] = { {  0.6f, -0.4f }, { 0.0f, 1.0f, 0.0f } };
-    pVertices[2] = { {  0.0f,  0.6f }, { 0.0f, 0.0f, 1.0f } };
-    */
+    s3DFileData plyFileInfoCar;
+    plyFileInfoCar.fileName = "assets/models/VintageRacingCar_xyz_only.ply";
+    ReadPlyModelFromFile_xyz(plyFileInfoCar);
 
-    std::ifstream plyFile("assets/models/bun_zipper_res3.ply");
-    std::string token = "";
-
-    // Search for vertices
-    while (token != "vertex")
-    {
-        plyFile >> token;
-    };
-    int numberOfVertices = 0;
-    plyFile >> numberOfVertices;
-
-    // Search for faces
-    while (token != "face")
-    {
-        plyFile >> token;
-    };
-    int numberOfTriangles = 0;
-    plyFile >> numberOfTriangles;
-
-    // Search for the end of the file's header
-    while (token != "end_header")
-    {
-        plyFile >> token;
-    };
-
-    // Spit out the count, for some helpful dev. feedback.
-    std::cout << numberOfVertices << std::endl;
-    std::cout << numberOfTriangles << std::endl;
-
-
-    // The bunny's data structure
-    struct sPlyVertex
-    {
-        float x, y, z, confidence, intensity;
-    };
-    struct sTriangle
-    {
-        unsigned int vertIndex_0;
-        unsigned int vertIndex_1;
-        unsigned int vertIndex_2;
-    };
-
-
-    // Now load model data from file:
-    // Model vertices:
-    sPlyVertex* pPlyVertices = new sPlyVertex[numberOfVertices];
-    for (unsigned index = 0; index != numberOfVertices; index++)
-    {
-        plyFile >> pPlyVertices[index].x;
-        plyFile >> pPlyVertices[index].y;
-        plyFile >> pPlyVertices[index].z;
-        plyFile >> pPlyVertices[index].confidence;
-        plyFile >> pPlyVertices[index].intensity;
-    }
-    // Model triangles
-    sTriangle* pPlyTriangles = new sTriangle[numberOfTriangles];
-    for (unsigned int index = 0; index != numberOfTriangles; index++)
-    {
-        // 3 737 103 17 
-        int discard = 0;
-        plyFile >> discard;
-        plyFile >> pPlyTriangles[index].vertIndex_0;
-        plyFile >> pPlyTriangles[index].vertIndex_1;
-        plyFile >> pPlyTriangles[index].vertIndex_2;
-    }
+    s3DFileData plyFileInfo;
+    plyFileInfo.fileName = "assets/models/Dragon 2.5Edited_xyz_only.ply";
+    ReadPlyModelFromFile_xyz(plyFileInfo);
 
 
     // Array given to the GPU
-    unsigned int numberOfVertices_TO_DRAW = numberOfTriangles * 3;
+    unsigned int numberOfVertices_TO_DRAW = plyFileInfo.numberOfTriangles * 3;
     sVertex* pVertices = new sVertex[numberOfVertices_TO_DRAW];
 
     // Putting model data into array
     unsigned int vertexIndex = 0;
-    for (unsigned int triIndex = 0; triIndex != numberOfTriangles; triIndex++)
+    for (unsigned int triIndex = 0; triIndex != plyFileInfo.numberOfTriangles; triIndex++)
     {
-        pVertices[vertexIndex + 0].pos.x = pPlyVertices[pPlyTriangles[triIndex].vertIndex_0].x;
-        pVertices[vertexIndex + 0].pos.y = pPlyVertices[pPlyTriangles[triIndex].vertIndex_0].y;
-        pVertices[vertexIndex + 0].pos.z = pPlyVertices[pPlyTriangles[triIndex].vertIndex_0].z;
+        pVertices[vertexIndex + 0].pos.x = plyFileInfo.pPlyVertices[plyFileInfo.pPlyTriangles[triIndex].vertIndex_0].x;
+        pVertices[vertexIndex + 0].pos.y = plyFileInfo.pPlyVertices[plyFileInfo.pPlyTriangles[triIndex].vertIndex_0].y;
+        pVertices[vertexIndex + 0].pos.z = plyFileInfo.pPlyVertices[plyFileInfo.pPlyTriangles[triIndex].vertIndex_0].z;
         pVertices[vertexIndex + 0].col.r = 1.0f;
         pVertices[vertexIndex + 0].col.g = 1.0f;
         pVertices[vertexIndex + 0].col.b = 1.0f;
 
-        pVertices[vertexIndex + 1].pos.x = pPlyVertices[pPlyTriangles[triIndex].vertIndex_1].x;
-        pVertices[vertexIndex + 1].pos.y = pPlyVertices[pPlyTriangles[triIndex].vertIndex_1].y;
-        pVertices[vertexIndex + 1].pos.z = pPlyVertices[pPlyTriangles[triIndex].vertIndex_1].z;
+        pVertices[vertexIndex + 1].pos.x = plyFileInfo.pPlyVertices[plyFileInfo.pPlyTriangles[triIndex].vertIndex_1].x;
+        pVertices[vertexIndex + 1].pos.y = plyFileInfo.pPlyVertices[plyFileInfo.pPlyTriangles[triIndex].vertIndex_1].y;
+        pVertices[vertexIndex + 1].pos.z = plyFileInfo.pPlyVertices[plyFileInfo.pPlyTriangles[triIndex].vertIndex_1].z;
         pVertices[vertexIndex + 1].col.r = 1.0f;
         pVertices[vertexIndex + 1].col.g = 1.0f;
         pVertices[vertexIndex + 1].col.b = 1.0f;
 
-        pVertices[vertexIndex + 2].pos.x = pPlyVertices[pPlyTriangles[triIndex].vertIndex_2].x;
-        pVertices[vertexIndex + 2].pos.y = pPlyVertices[pPlyTriangles[triIndex].vertIndex_2].y;
-        pVertices[vertexIndex + 2].pos.z = pPlyVertices[pPlyTriangles[triIndex].vertIndex_2].z;
+        pVertices[vertexIndex + 2].pos.x = plyFileInfo.pPlyVertices[plyFileInfo.pPlyTriangles[triIndex].vertIndex_2].x;
+        pVertices[vertexIndex + 2].pos.y = plyFileInfo.pPlyVertices[plyFileInfo.pPlyTriangles[triIndex].vertIndex_2].y;
+        pVertices[vertexIndex + 2].pos.z = plyFileInfo.pPlyVertices[plyFileInfo.pPlyTriangles[triIndex].vertIndex_2].z;
         pVertices[vertexIndex + 2].col.r = 1.0f;
         pVertices[vertexIndex + 2].col.g = 1.0f;
         pVertices[vertexIndex + 2].col.b = 1.0f;
 
         vertexIndex += 3;
     }
+
+
+    // Example of transforming a model:
+    // Scaling
+//    for (unsigned int index = 0; index != numberOfVertices_TO_DRAW; index++)
+//    {
+//        pVertices[index].pos.x *= 0.01f;
+//        pVertices[index].pos.y *= 0.01f;
+//        pVertices[index].pos.z *= 0.01f;
+//    }
+    // Moving
+//    for (unsigned int index = 0; index != numberOfVertices_TO_DRAW; index++)
+//    {
+//        pVertices[index].pos.x += 1.0f;
+//    }
 
 
     glfwSetErrorCallback(error_callback);
@@ -253,6 +196,31 @@ int main(void)
         pVertices,                      // Where is the data copied from
         GL_STATIC_DRAW);
 
+    cShaderManager* pShaderManager = new cShaderManager();
+
+    cShaderManager::cShader vertexShader;
+    vertexShader.fileName = "assets/shaders/vertex01.glsl";
+
+    cShaderManager::cShader fragmentShader;
+    fragmentShader.fileName = "assets/shaders/fragment01.glsl";
+
+    if (!pShaderManager->createProgramFromFile(
+        "shader01",
+        vertexShader,
+        fragmentShader
+    ))
+    {
+        std::cout << "Error: " << pShaderManager->getLastError() << std::endl;
+    }
+    else
+    {
+        std::cout << "Shader built okay." << std::endl;
+    }
+
+    const GLuint program = pShaderManager->getIDFromFriendlyName("shader01");
+    glUseProgram(program);
+
+    /*
     const GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertex_shader, 1, &vertex_shader_text, NULL);
     glCompileShader(vertex_shader);
@@ -267,6 +235,8 @@ int main(void)
     glLinkProgram(program);
 
     const GLint mvp_location = glGetUniformLocation(program, "MVP");
+    */
+
     const GLint vpos_location = glGetAttribLocation(program, "vPos");
     const GLint vcol_location = glGetAttribLocation(program, "vCol");
 
@@ -305,18 +275,30 @@ int main(void)
         m = glm::mat4(1.0f);
 
         //mat4x4_rotate_Z(m, m, (float) glfwGetTime());
-        glm::mat4 rotateZ =
-            glm::rotate(glm::mat4(1.0f),        // Ignore this
-                0.0f, //(float)glfwGetTime(),               // Angle in radians
-                glm::vec3(0.0f, 0.0, 1.0f));        // Axis it rotates around
 
+        float angleInRadians = (float)glfwGetTime() / 5.0f;
+
+        glm::mat4 rotateZ =
+            glm::rotate(glm::mat4(1.0f),            // Ignore this
+                angleInRadians, //(float)glfwGetTime(),       // Angle in radians
+                glm::vec3(0.0f, 0.0, 1.0f));        // Axis it rotates around
         m = m * rotateZ;
 
+        glm::mat4 translate = glm::translate(glm::mat4(1.0f),
+            glm::vec3(5.0f, 0.0f, 0.0f));
+        m = m * translate;
+
+
+        glm::mat4 scale = glm::scale(glm::mat4(1.0f),
+            glm::vec3(0.2f, 0.2f, 0.02f));
+        m = m * scale;
+
         //mat4x4_ortho(p, -ratio, ratio, -1.f, 1.f, 1.f, -1.f);
-        p = glm::perspective(0.6f,
-            ratio,
-            0.1f,
-            1000.0f);
+        p = glm::perspective(
+            0.6f,       // FOV
+            ratio,      // Aspect ratio of screen
+            0.1f,       // Near plane
+            1000.0f);   // Far plane
 
         v = glm::mat4(1.0f);
 
@@ -331,38 +313,32 @@ int main(void)
 
         //mat4x4_mul(mvp, p, m);
         mvp = p * v * m;
+        /*  Info:
+        * M = Model matrix
+        * V = View matrix
+        * P = Projection matrix
+        */
+
         glUseProgram(program);
+        const GLint mvp_location = glGetUniformLocation(program, "MVP");
         glUniformMatrix4fv(mvp_location, 1, GL_FALSE, (const GLfloat*)&mvp);
         glBindVertexArray(vertex_array);
         //        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         glDrawArrays(GL_TRIANGLES, 0, numberOfVertices_TO_DRAW);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
-    }
+
+        //std::cout << "Camera: "
+        //    << cameraEye.x << ", "
+        //    << cameraEye.y << ", "
+        //    << cameraEye.z << std::endl;
+
+    }// End of the draw loop
 
     glfwDestroyWindow(window);
 
     glfwTerminate();
     exit(EXIT_SUCCESS);
-}
-
-// "o" for output.
-// std::ofstream myFile("someData.sdfs");
-// "i" for input
-void FileHandling(void)
-{
-    std::ifstream readFile("bun_zipper.ply");
-    if (readFile.is_open())
-    {
-        std::string fileDataLine;
-        while (readFile >> fileDataLine)
-        {
-            // Could write data to console here.
-        };
-    }
-    else
-    {
-        std::cout << "Couldn't find the file." << std::endl;
-    }
 }

@@ -137,8 +137,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Basic_Shader_Manager\cShader.cpp" />
+    <ClCompile Include="Basic_Shader_Manager\cShaderManager.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="PlyFileLoaders.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Basic_Shader_Manager\cShaderManager.h" />
+    <ClInclude Include="GLCommon.h" />
+    <ClInclude Include="PlyFileLoaders.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
