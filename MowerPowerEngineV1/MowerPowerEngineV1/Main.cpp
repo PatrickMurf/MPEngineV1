@@ -14,11 +14,19 @@
 
 #include <iostream>     // "input output" stream
 #include <fstream>      // "file" stream
+#include <sstream>      // "string" stream ("string builder" in Java c#, etc.)
 #include <string>
 
 #include "PlyFileLoaders.h"
 #include "Basic_Shader_Manager/cShaderManager.h"
+#include "sMesh.h"
+#include "cVAOManager/cVAOManager.h"
 
+const unsigned int MAX_NUMBER_OF_MESHES = 1000;
+unsigned int g_NumberOfMeshesToDraw;
+sMesh* g_myMeshes[MAX_NUMBER_OF_MESHES] = { 0 };    // Set all to zeros, by default
+
+/*
 struct sVertex
 {
     glm::vec3 pos;      // position   or "float x, y, z"
@@ -27,6 +35,7 @@ struct sVertex
     // 0.0 = black (Red, Green, Blue)
     // 1.0 = white 
 };
+*/
 
 //static const char* vertex_shader_text =
 //"#version 330\n"
@@ -96,9 +105,20 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
     }
 }
 
+
+// https://stackoverflow.com/questions/5289613/generate-random-float-between-two-floats
+float getRandomFloat(float a, float b) {
+    float random = ((float)rand()) / (float)RAND_MAX;
+    float diff = b - a;
+    float r = random * diff;
+    return a + r;
+}
+
+
 int main(void)
 {
     
+    /*
     s3DFileData plyFileInfoBunny;
     plyFileInfoBunny.fileName = "assets/models/bun_zipper.ply";
     ReadPlyModelFromFile_xyz_ci(plyFileInfoBunny);
@@ -110,8 +130,10 @@ int main(void)
     s3DFileData plyFileInfo;
     plyFileInfo.fileName = "assets/models/Dragon 2.5Edited_xyz_only.ply";
     ReadPlyModelFromFile_xyz(plyFileInfo);
+    */
 
 
+    /*
     // Array given to the GPU
     unsigned int numberOfVertices_TO_DRAW = plyFileInfo.numberOfTriangles * 3;
     sVertex* pVertices = new sVertex[numberOfVertices_TO_DRAW];
@@ -158,6 +180,7 @@ int main(void)
 //    {
 //        pVertices[index].pos.x += 1.0f;
 //    }
+    */
 
 
     glfwSetErrorCallback(error_callback);
@@ -182,19 +205,21 @@ int main(void)
     gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
     glfwSwapInterval(1);
 
+    /*
     // NOTE: OpenGL error checks have been omitted for brevity
-
+    // This asks the GPU to allocate some memory, so that the CPU can copy data for it.
     GLuint vertex_buffer;
     glGenBuffers(1, &vertex_buffer);
     glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
 
     //    int size_in_bytes_of_vertex_array = sizeof(sVertex) * 3;
     int size_in_bytes_of_vertex_array = sizeof(sVertex) * numberOfVertices_TO_DRAW;
-
+    // This is where it actually copies data form the CPU to the GPU.
     glBufferData(GL_ARRAY_BUFFER,
         size_in_bytes_of_vertex_array,  // The size of the data being copied
         pVertices,                      // Where is the data copied from
         GL_STATIC_DRAW);
+    */
 
     cShaderManager* pShaderManager = new cShaderManager();
 
@@ -237,12 +262,14 @@ int main(void)
     const GLint mvp_location = glGetUniformLocation(program, "MVP");
     */
 
+    /*
     const GLint vpos_location = glGetAttribLocation(program, "vPos");
     const GLint vcol_location = glGetAttribLocation(program, "vCol");
 
     GLuint vertex_array;
     glGenVertexArrays(1, &vertex_array);
     glBindVertexArray(vertex_array);
+
     glEnableVertexAttribArray(vpos_location);
     glVertexAttribPointer(
         vpos_location,
@@ -259,6 +286,62 @@ int main(void)
         GL_FALSE,
         sizeof(sVertex),
         (void*)offsetof(sVertex, col));
+    */
+
+
+    cVAOManager* pMeshManager = new cVAOManager();
+
+    sModelDrawInfo carModelInfo;
+    pMeshManager->LoadModelIntoVAO(
+        "assets/models/VintageRacingCar_xyz_only.ply",
+        carModelInfo,
+        program);
+    std::cout << carModelInfo.numberOfVertices << " vertices loaded" << std::endl;
+
+    sModelDrawInfo dragonModel;
+    pMeshManager->LoadModelIntoVAO("assets/models/Dragon 2.5Edited_xyz_only.ply",
+        dragonModel, program);
+    std::cout << dragonModel.numberOfVertices << " vertices loaded" << std::endl;
+
+
+    // Loading some models to draw:
+    sMesh* pDragon = new sMesh();
+    pDragon->modelFileName = "assets/models/Dragon 2.5Edited_xyz_only.ply";
+    pDragon->positionXYZ = glm::vec3(20.0f, 0.0f, 0.0f);
+    pDragon->rotationEulerXYZ.x = -90.0f;
+    pDragon->uniformScale = 0.1f;
+    pDragon->objectColourRGBA = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+    ::g_myMeshes[0] = pDragon;
+
+    sMesh* pDragon2 = new sMesh();
+    pDragon2->modelFileName = "assets/models/Dragon 2.5Edited_xyz_only.ply";
+    pDragon2->positionXYZ = glm::vec3(-20.0f, 0.0f, 0.0f);
+    pDragon2->rotationEulerXYZ.x = 90.0f;
+    pDragon2->uniformScale = 0.2f;
+    pDragon2->objectColourRGBA = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
+    ::g_myMeshes[1] = pDragon2;
+
+    ::g_NumberOfMeshesToDraw = 2;
+
+    for (int count = 0; count != 100; count++)
+    {
+        sMesh* pDragon = new sMesh();
+        pDragon->modelFileName = "assets/models/VintageRacingCar_xyz_only.ply";
+        pDragon->positionXYZ = glm::vec3(getRandomFloat(-5.0f, 5.0f),
+            getRandomFloat(-5.0f, 5.0f),
+            getRandomFloat(-5.0f, 5.0f));
+        pDragon->rotationEulerXYZ.x = 90.0f;
+        pDragon->objectColourRGBA = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
+        pDragon->uniformScale = 0.2f;
+
+        ::g_myMeshes[::g_NumberOfMeshesToDraw] = pDragon;
+
+        ::g_NumberOfMeshesToDraw++;
+    }
+
+
+    glUseProgram(program);
+
 
     while (!glfwWindowShouldClose(window))
     {
@@ -271,69 +354,121 @@ int main(void)
         glViewport(0, 0, width, height);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        //         mat4x4_identity(m);
-        m = glm::mat4(1.0f);
 
-        //mat4x4_rotate_Z(m, m, (float) glfwGetTime());
-
-        float angleInRadians = (float)glfwGetTime() / 5.0f;
-
-        glm::mat4 rotateZ =
-            glm::rotate(glm::mat4(1.0f),            // Ignore this
-                angleInRadians, //(float)glfwGetTime(),       // Angle in radians
-                glm::vec3(0.0f, 0.0, 1.0f));        // Axis it rotates around
-        m = m * rotateZ;
-
-        glm::mat4 translate = glm::translate(glm::mat4(1.0f),
-            glm::vec3(5.0f, 0.0f, 0.0f));
-        m = m * translate;
-
-
-        glm::mat4 scale = glm::scale(glm::mat4(1.0f),
-            glm::vec3(0.2f, 0.2f, 0.02f));
-        m = m * scale;
-
-        //mat4x4_ortho(p, -ratio, ratio, -1.f, 1.f, 1.f, -1.f);
-        p = glm::perspective(
+        glm::mat4 matProjection = glm::mat4(1.0f);
+        matProjection = glm::perspective(
             0.6f,       // FOV
             ratio,      // Aspect ratio of screen
             0.1f,       // Near plane
             1000.0f);   // Far plane
-
-        v = glm::mat4(1.0f);
+            
+        // View or "camera"
+        glm::mat4 matView = glm::mat4(1.0f);
 
         //        glm::vec3 cameraEye = glm::vec3(0.0, 0.0, 4.0f);
         glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
         glm::vec3 upVector = glm::vec3(0.0f, 1.0f, 0.0f);
 
-        v = glm::lookAt(
+        matView = glm::lookAt(
             cameraEye,
             cameraTarget,
             upVector);
 
-        //mat4x4_mul(mvp, p, m);
-        mvp = p * v * m;
-        /*  Info:
-        * M = Model matrix
-        * V = View matrix
-        * P = Projection matrix
-        */
+    //    //mat4x4_mul(mvp, p, m);
+    //    mvp = p * v * m;
+    //    /*  Info:
+    //    * M = Model matrix
+    //    * V = View matrix
+    //    * P = Projection matrix
+    //    */
 
-        glUseProgram(program);
-        const GLint mvp_location = glGetUniformLocation(program, "MVP");
-        glUniformMatrix4fv(mvp_location, 1, GL_FALSE, (const GLfloat*)&mvp);
-        glBindVertexArray(vertex_array);
-        //        glDrawArrays(GL_TRIANGLES, 0, 3);
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        glDrawArrays(GL_TRIANGLES, 0, numberOfVertices_TO_DRAW);
 
-        glfwSwapBuffers(window);
+        // Draw all the objects
+        for (unsigned int meshIndex = 0; meshIndex != g_NumberOfMeshesToDraw; meshIndex++)
+        {
+            sMesh* pCurrentMesh = ::g_myMeshes[meshIndex];
+
+            //         mat4x4_identity(m);
+            // Could be called the "model" or "world" matrix.  Was explained using the example of a camera moving aorund a stationary movie prop spaceship.
+            glm::mat4 matModel = glm::mat4(1.0f);
+
+            // Translation (movement, position, & placement)
+            glm::mat4 matTranslate
+                = glm::translate(glm::mat4(1.0f),
+                    glm::vec3(
+                    pCurrentMesh->positionXYZ.x,
+                    pCurrentMesh->positionXYZ.y,
+                    pCurrentMesh->positionXYZ.z
+                ));
+
+            // Rotation
+            // Calculating 3 Euler axis matricies 
+            glm::mat4 matRotateX =
+                glm::rotate(glm::mat4(1.0f),            // Ignore this
+                    pCurrentMesh->rotationEulerXYZ.x,   // Angle in radians
+                    glm::vec3(1.0f, 0.0, 0.0f));        // Axis it rotates around
+
+            glm::mat4 matRotateY =
+                glm::rotate(glm::mat4(1.0f),            // Ignore this
+                    pCurrentMesh->rotationEulerXYZ.y,   // Angle in radians
+                    glm::vec3(0.0f, 1.0, 0.0f));        // Axis it rotates around
+
+            glm::mat4 matRotateZ =
+                glm::rotate(glm::mat4(1.0f),            // Ignore this
+                    pCurrentMesh->rotationEulerXYZ.z,   // Angle in radians
+                    glm::vec3(0.0f, 0.0, 1.0f));        // Axis it rotates around
+
+            // Scale
+            glm::mat4 matScale = glm::scale(glm::mat4(1.0f),
+                glm::vec3(pCurrentMesh->uniformScale, pCurrentMesh->uniformScale, pCurrentMesh->uniformScale));
+
+            // Calculate the final model world matrix:
+            // Note:  A quirk about the math:  The thing at the bottom of the list, is like the 1st thing to be applied.
+            // Later on, a "pChildMeshes" thing would be added; for models attached to other models.  (Example:  Wheels & doors on a car.)
+            matModel *= matTranslate;     // A better version;    matModel *= matTranslate
+            matModel *= matRotateX;
+            matModel *= matRotateY;
+            matModel *= matRotateZ;
+            matModel *= matScale;
+
+            glm::mat4 matMVP = matProjection * matView * matModel;
+                
+            //glUseProgram(program);
+            const GLint mvp_location = glGetUniformLocation(program, "MVP");
+            glUniformMatrix4fv(mvp_location, 1, GL_FALSE, (const GLfloat*)&matMVP);
+            //glBindVertexArray(vertex_array);
+            // This one can do solid, wireframe, & other options
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            //glDrawArrays(GL_TRIANGLES, 0, numberOfVertices_TO_DRAW);
+
+            sModelDrawInfo meshToDrawInfo;
+            if (pMeshManager->FindDrawInfoByModelName(pCurrentMesh->modelFileName, meshToDrawInfo))
+            {
+                glBindVertexArray(meshToDrawInfo.VAO_ID); 		// enable VAO(and everything else)
+                //https://registry.khronos.org/OpenGL-Refpages/gl4/html/glDrawElements.xhtml
+                glDrawElements(GL_TRIANGLES,
+                    meshToDrawInfo.numberOfTriangles,
+                    GL_UNSIGNED_INT,
+                    (void*)0
+                );
+                glBindVertexArray(0); 			//disable VAO(and everything else)
+            }
+        }
+
+        glfwSwapBuffers(window);    // End of the render call.  This is where it swaps the screens (One screen you view, the other it draws to.)
         glfwPollEvents();
 
         //std::cout << "Camera: "
         //    << cameraEye.x << ", "
         //    << cameraEye.y << ", "
         //    << cameraEye.z << std::endl;
+
+        std::stringstream ssTitle;
+        ssTitle << "Camera: "
+            << cameraEye.x << ", "
+            << cameraEye.y << ", "
+            << cameraEye.z << std::endl;
+        glfwSetWindowTitle(window, ssTitle.str().c_str());
 
     }// End of the draw loop
 

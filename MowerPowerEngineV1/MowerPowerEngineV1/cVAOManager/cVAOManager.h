@@ -10,9 +10,9 @@
 // The vertex structure 
 //	that's ON THE GPU (eventually) 
 // So dictated from THE SHADER
-struct sVertex
+struct sVertex_SHADER_FORMAT_xyz_rgb
 {
-	float x, y, z;		
+	float x, y, z;
 	float r, g, b;
 };
 
@@ -35,7 +35,7 @@ struct sModelDrawInfo
 	unsigned int numberOfTriangles;
 
 	// The "local" (i.e. "CPU side" temporary array)
-	sVertex* pVertices;	//  = 0;
+	sVertex_SHADER_FORMAT_xyz_rgb* pVertices;	//  = 0;
 	// The index buffer (CPU side)
 	unsigned int* pIndices;
 };

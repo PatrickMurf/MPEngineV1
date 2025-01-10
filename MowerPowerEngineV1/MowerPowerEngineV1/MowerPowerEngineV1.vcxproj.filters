@@ -16,6 +16,12 @@
     <Filter Include="Shader Manager">
       <UniqueIdentifier>{8a46706b-610c-4944-b0e5-de5a3af7c54a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{4150da7b-bb70-4ce4-ab4d-7eb9a205e62f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mesh Info">
+      <UniqueIdentifier>{ae3f2ddd-a988-41f3-a89e-0030ed505c9d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -33,6 +39,9 @@
     <ClCompile Include="Basic_Shader_Manager\cShaderManager.cpp">
       <Filter>Shader Manager</Filter>
     </ClCompile>
+    <ClCompile Include="cVAOManager\cVAOManager.cpp">
+      <Filter>Mesh Info</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PlyFileLoaders.h">
@@ -44,5 +53,19 @@
     <ClInclude Include="GLCommon.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="sMesh.h">
+      <Filter>Mesh Info</Filter>
+    </ClInclude>
+    <ClInclude Include="cVAOManager\cVAOManager.h">
+      <Filter>Mesh Info</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="assets\shaders\fragment01.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="assets\shaders\vertex01.glsl">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>
