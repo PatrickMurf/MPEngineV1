@@ -197,6 +197,12 @@ int main(void)
         ::g_NumberOfMeshesToDraw++;
     }
 
+    // I think this was a new add I missed?:
+    /*
+    ::g_pFlyCamera = new cBasicFlyCamera();
+    ::g_pFlyCamera->setEyeLocation(glm::vec3(0.0f, 0.0f, -10.0f));
+    */
+
 
     glUseProgram(program);
 
