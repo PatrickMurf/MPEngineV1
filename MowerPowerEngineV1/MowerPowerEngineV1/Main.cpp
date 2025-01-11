@@ -21,45 +21,13 @@
 #include "Basic_Shader_Manager/cShaderManager.h"
 #include "sMesh.h"
 #include "cVAOManager/cVAOManager.h"
+#include "sharedThings.h"
 
 const unsigned int MAX_NUMBER_OF_MESHES = 1000;
 unsigned int g_NumberOfMeshesToDraw;
 sMesh* g_myMeshes[MAX_NUMBER_OF_MESHES] = { 0 };    // Set all to zeros, by default
 
-/*
-struct sVertex
-{
-    glm::vec3 pos;      // position   or "float x, y, z"
-    glm::vec3 col;      // Colour     or "float x, y, z"
-    // Colour range is 0.0 to 1.0
-    // 0.0 = black (Red, Green, Blue)
-    // 1.0 = white 
-};
-*/
 
-//static const char* vertex_shader_text =
-//"#version 330\n"
-//"uniform mat4 MVP;\n"
-//"in vec3 vCol;\n"
-//"in vec3 vPos;\n"
-//"out vec3 color;\n"
-//"void main()\n"
-//"{\n"
-//"    gl_Position = MVP * vec4(vPos, 1.0);\n"
-//"    color = vCol;\n"
-//"}\n";
-//
-//static const char* fragment_shader_text =
-//"#version 330\n"
-//"in vec3 color;\n"
-//"out vec4 fragment;\n"
-//"void main()\n"
-//"{\n"
-//"    fragment = vec4(color, 1.0);\n"
-//"}\n";
-
-
-glm::vec3 cameraEye = glm::vec3(0.0, 0.0, 4.0f);
 
 
 
@@ -75,34 +43,6 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 
     const float CAMERA_MOVE_SPEED = 0.1f;
 
-    if (key == GLFW_KEY_A)
-    {
-        cameraEye.x -= CAMERA_MOVE_SPEED;
-    }
-
-    if (key == GLFW_KEY_D)
-    {
-        cameraEye.x += CAMERA_MOVE_SPEED;
-    }
-
-    if (key == GLFW_KEY_W)
-    {
-        cameraEye.z -= CAMERA_MOVE_SPEED;
-    }
-
-    if (key == GLFW_KEY_S)
-    {
-        cameraEye.z += CAMERA_MOVE_SPEED;
-    }
-
-    if (key == GLFW_KEY_Q)
-    {
-        cameraEye.y -= CAMERA_MOVE_SPEED;
-    }
-    if (key == GLFW_KEY_E)
-    {
-        cameraEye.y += CAMERA_MOVE_SPEED;
-    }
 }
 
 
@@ -118,69 +58,6 @@ float getRandomFloat(float a, float b) {
 int main(void)
 {
     
-    /*
-    s3DFileData plyFileInfoBunny;
-    plyFileInfoBunny.fileName = "assets/models/bun_zipper.ply";
-    ReadPlyModelFromFile_xyz_ci(plyFileInfoBunny);
-
-    s3DFileData plyFileInfoCar;
-    plyFileInfoCar.fileName = "assets/models/VintageRacingCar_xyz_only.ply";
-    ReadPlyModelFromFile_xyz(plyFileInfoCar);
-
-    s3DFileData plyFileInfo;
-    plyFileInfo.fileName = "assets/models/Dragon 2.5Edited_xyz_only.ply";
-    ReadPlyModelFromFile_xyz(plyFileInfo);
-    */
-
-
-    /*
-    // Array given to the GPU
-    unsigned int numberOfVertices_TO_DRAW = plyFileInfo.numberOfTriangles * 3;
-    sVertex* pVertices = new sVertex[numberOfVertices_TO_DRAW];
-
-    // Putting model data into array
-    unsigned int vertexIndex = 0;
-    for (unsigned int triIndex = 0; triIndex != plyFileInfo.numberOfTriangles; triIndex++)
-    {
-        pVertices[vertexIndex + 0].pos.x = plyFileInfo.pPlyVertices[plyFileInfo.pPlyTriangles[triIndex].vertIndex_0].x;
-        pVertices[vertexIndex + 0].pos.y = plyFileInfo.pPlyVertices[plyFileInfo.pPlyTriangles[triIndex].vertIndex_0].y;
-        pVertices[vertexIndex + 0].pos.z = plyFileInfo.pPlyVertices[plyFileInfo.pPlyTriangles[triIndex].vertIndex_0].z;
-        pVertices[vertexIndex + 0].col.r = 1.0f;
-        pVertices[vertexIndex + 0].col.g = 1.0f;
-        pVertices[vertexIndex + 0].col.b = 1.0f;
-
-        pVertices[vertexIndex + 1].pos.x = plyFileInfo.pPlyVertices[plyFileInfo.pPlyTriangles[triIndex].vertIndex_1].x;
-        pVertices[vertexIndex + 1].pos.y = plyFileInfo.pPlyVertices[plyFileInfo.pPlyTriangles[triIndex].vertIndex_1].y;
-        pVertices[vertexIndex + 1].pos.z = plyFileInfo.pPlyVertices[plyFileInfo.pPlyTriangles[triIndex].vertIndex_1].z;
-        pVertices[vertexIndex + 1].col.r = 1.0f;
-        pVertices[vertexIndex + 1].col.g = 1.0f;
-        pVertices[vertexIndex + 1].col.b = 1.0f;
-
-        pVertices[vertexIndex + 2].pos.x = plyFileInfo.pPlyVertices[plyFileInfo.pPlyTriangles[triIndex].vertIndex_2].x;
-        pVertices[vertexIndex + 2].pos.y = plyFileInfo.pPlyVertices[plyFileInfo.pPlyTriangles[triIndex].vertIndex_2].y;
-        pVertices[vertexIndex + 2].pos.z = plyFileInfo.pPlyVertices[plyFileInfo.pPlyTriangles[triIndex].vertIndex_2].z;
-        pVertices[vertexIndex + 2].col.r = 1.0f;
-        pVertices[vertexIndex + 2].col.g = 1.0f;
-        pVertices[vertexIndex + 2].col.b = 1.0f;
-
-        vertexIndex += 3;
-    }
-
-
-    // Example of transforming a model:
-    // Scaling
-//    for (unsigned int index = 0; index != numberOfVertices_TO_DRAW; index++)
-//    {
-//        pVertices[index].pos.x *= 0.01f;
-//        pVertices[index].pos.y *= 0.01f;
-//        pVertices[index].pos.z *= 0.01f;
-//    }
-    // Moving
-//    for (unsigned int index = 0; index != numberOfVertices_TO_DRAW; index++)
-//    {
-//        pVertices[index].pos.x += 1.0f;
-//    }
-    */
 
 
     glfwSetErrorCallback(error_callback);
@@ -199,27 +76,19 @@ int main(void)
         exit(EXIT_FAILURE);
     }
 
+    // Callback for keyboard, but for "typing"
+    // Like it captures the press and release and repeat
     glfwSetKeyCallback(window, key_callback);
+
+    glfwSetCursorPosCallback(window, cursor_position_callback);     // Gets the mouse position
+    glfwSetWindowFocusCallback(window, cursor_enter_callback);      // Prevents it from tracking the mouse off the window
+    glfwSetMouseButtonCallback(window, mouse_button_callback);      // When you press a button
+    glfwSetScrollCallback(window, scroll_callback);                 // For the scrollwheel
 
     glfwMakeContextCurrent(window);
     gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
     glfwSwapInterval(1);
 
-    /*
-    // NOTE: OpenGL error checks have been omitted for brevity
-    // This asks the GPU to allocate some memory, so that the CPU can copy data for it.
-    GLuint vertex_buffer;
-    glGenBuffers(1, &vertex_buffer);
-    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-
-    //    int size_in_bytes_of_vertex_array = sizeof(sVertex) * 3;
-    int size_in_bytes_of_vertex_array = sizeof(sVertex) * numberOfVertices_TO_DRAW;
-    // This is where it actually copies data form the CPU to the GPU.
-    glBufferData(GL_ARRAY_BUFFER,
-        size_in_bytes_of_vertex_array,  // The size of the data being copied
-        pVertices,                      // Where is the data copied from
-        GL_STATIC_DRAW);
-    */
 
     cShaderManager* pShaderManager = new cShaderManager();
 
@@ -245,48 +114,9 @@ int main(void)
     const GLuint program = pShaderManager->getIDFromFriendlyName("shader01");
     glUseProgram(program);
 
-    /*
-    const GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertex_shader, 1, &vertex_shader_text, NULL);
-    glCompileShader(vertex_shader);
 
-    const GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragment_shader, 1, &fragment_shader_text, NULL);
-    glCompileShader(fragment_shader);
+    ::g_pFlyCamera = new cBasicFlyCamera();
 
-    const GLuint program = glCreateProgram();
-    glAttachShader(program, vertex_shader);
-    glAttachShader(program, fragment_shader);
-    glLinkProgram(program);
-
-    const GLint mvp_location = glGetUniformLocation(program, "MVP");
-    */
-
-    /*
-    const GLint vpos_location = glGetAttribLocation(program, "vPos");
-    const GLint vcol_location = glGetAttribLocation(program, "vCol");
-
-    GLuint vertex_array;
-    glGenVertexArrays(1, &vertex_array);
-    glBindVertexArray(vertex_array);
-
-    glEnableVertexAttribArray(vpos_location);
-    glVertexAttribPointer(
-        vpos_location,
-        3,
-        GL_FLOAT,
-        GL_FALSE,
-        sizeof(sVertex),                    // The "stride", aka, how many bytes between vertices
-        (void*)offsetof(sVertex, pos));     // This looks for how far into the data "pos" is, so that it's always grabbing the correct value
-    glEnableVertexAttribArray(vcol_location);
-    glVertexAttribPointer(
-        vcol_location,
-        3,
-        GL_FLOAT,
-        GL_FALSE,
-        sizeof(sVertex),
-        (void*)offsetof(sVertex, col));
-    */
 
 
     cVAOManager* pMeshManager = new cVAOManager();
@@ -302,6 +132,11 @@ int main(void)
     pMeshManager->LoadModelIntoVAO("assets/models/Dragon 2.5Edited_xyz_only.ply",
         dragonModel, program);
     std::cout << dragonModel.numberOfVertices << " vertices loaded" << std::endl;
+
+    sModelDrawInfo terrainModel;
+    pMeshManager->LoadModelIntoVAO("assets/models/Simple_MeshLab_terrain_xyz_only.ply",
+        terrainModel, program);
+    std::cout << terrainModel.numberOfVertices << " vertices loaded" << std::endl;
 
 
     // Loading some models to draw:
@@ -323,16 +158,39 @@ int main(void)
 
     ::g_NumberOfMeshesToDraw = 2;
 
+
+    sMesh* pTerrainMesh = new sMesh();
+    pTerrainMesh->modelFileName = "assets/models/Simple_MeshLab_terrain_xyz_only.ply";
+    pTerrainMesh->positionXYZ = glm::vec3(0.0f, -25.0f, 0.0f);
+    //pTerrainMesh->rotationEulerXYZ.x = 90.0f;
+    pTerrainMesh->objectColourRGBA = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    pTerrainMesh->bOverrideObjectColour = true;
+    //    pTerrainMesh->bIsWireframe = true;
+    ::g_myMeshes[::g_NumberOfMeshesToDraw] = pTerrainMesh;
+    ::g_NumberOfMeshesToDraw++;
+
+
     for (int count = 0; count != 100; count++)
     {
         sMesh* pDragon = new sMesh();
         pDragon->modelFileName = "assets/models/VintageRacingCar_xyz_only.ply";
-        pDragon->positionXYZ = glm::vec3(getRandomFloat(-5.0f, 5.0f),
+        pDragon->positionXYZ = glm::vec3(
+            getRandomFloat(-5.0f, 5.0f),
             getRandomFloat(-5.0f, 5.0f),
             getRandomFloat(-5.0f, 5.0f));
         pDragon->rotationEulerXYZ.x = 90.0f;
-        pDragon->objectColourRGBA = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
+        pDragon->objectColourRGBA = glm::vec4(
+            getRandomFloat(-5.0f, 5.0f),
+            getRandomFloat(-5.0f, 5.0f),
+            getRandomFloat(-5.0f, 5.0f),
+            1.0f);
         pDragon->uniformScale = 0.2f;
+
+        if (rand() * 10 % 5)
+        {
+            pDragon->bIsWireframe = rand() % 2;     // WARNING:  This is a temp thing; this line of code is ill-advised.
+                                                        // Will randomly assign either 0, or 1.
+        }
 
         ::g_myMeshes[::g_NumberOfMeshesToDraw] = pDragon;
 
@@ -341,6 +199,10 @@ int main(void)
 
 
     glUseProgram(program);
+
+    // Enable depth buffering (z buffering)
+    // https://registry.khronos.org/OpenGL-Refpages/gl4/html/glEnable.xhtml
+    glEnable(GL_DEPTH_TEST);
 
 
     while (!glfwWindowShouldClose(window))
@@ -352,7 +214,7 @@ int main(void)
         glfwGetFramebufferSize(window, &width, &height);
         ratio = width / (float)height;
         glViewport(0, 0, width, height);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
         glm::mat4 matProjection = glm::mat4(1.0f);
@@ -370,8 +232,8 @@ int main(void)
         glm::vec3 upVector = glm::vec3(0.0f, 1.0f, 0.0f);
 
         matView = glm::lookAt(
-            cameraEye,
-            cameraTarget,
+            ::g_pFlyCamera->getEyeLocation(),
+            ::g_pFlyCamera->getTargetLocation(),
             upVector);
 
     //    //mat4x4_mul(mvp, p, m);
@@ -387,6 +249,11 @@ int main(void)
         for (unsigned int meshIndex = 0; meshIndex != g_NumberOfMeshesToDraw; meshIndex++)
         {
             sMesh* pCurrentMesh = ::g_myMeshes[meshIndex];
+
+            if (pCurrentMesh->bIsVisible)
+            {
+                continue;
+            }
 
             //         mat4x4_identity(m);
             // Could be called the "model" or "world" matrix.  Was explained using the example of a camera moving aorund a stationary movie prop spaceship.
@@ -437,8 +304,39 @@ int main(void)
             const GLint mvp_location = glGetUniformLocation(program, "MVP");
             glUniformMatrix4fv(mvp_location, 1, GL_FALSE, (const GLfloat*)&matMVP);
             //glBindVertexArray(vertex_array);
+            
+
+            // uniform bool bUseObjectColour;
+            GLint bUseObjectColour = glGetUniformLocation(program, "objectColour");
+            if (pCurrentMesh->bOverrideObjectColour)
+            {
+                // bool doesn't really exist; it's a float...
+                glUniform1f(bUseObjectColour, GLfloat(GL_TRUE));    // or 1.0f
+            }
+            else
+            {
+                glUniform1f(bUseObjectColour, GLfloat(GL_FALSE));   // or 0.0f
+            }
+
+            // Set the object colour
+            // Reminder:    uniform vec4 objectColour;
+            GLint objectColour_UL = glGetUniformLocation(program, "objectColour");
+            glUniform4f(
+                objectColour_UL,
+                pCurrentMesh->objectColourRGBA.r,
+                pCurrentMesh->objectColourRGBA.g,
+                pCurrentMesh->objectColourRGBA.b,
+                1.0f);
+
             // This one can do solid, wireframe, & other options
-            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            if (pCurrentMesh->bIsWireframe)
+            {
+                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            }
+            else
+            {
+                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            }
             //glDrawArrays(GL_TRIANGLES, 0, numberOfVertices_TO_DRAW);
 
             sModelDrawInfo meshToDrawInfo;
@@ -447,7 +345,7 @@ int main(void)
                 glBindVertexArray(meshToDrawInfo.VAO_ID); 		// enable VAO(and everything else)
                 //https://registry.khronos.org/OpenGL-Refpages/gl4/html/glDrawElements.xhtml
                 glDrawElements(GL_TRIANGLES,
-                    meshToDrawInfo.numberOfTriangles,
+                    meshToDrawInfo.numberOfIndices,
                     GL_UNSIGNED_INT,
                     (void*)0
                 );
@@ -455,22 +353,27 @@ int main(void)
             }
         }
 
+        // Handle async IO stuff
+        handleKeyboardAsync(window);
+        handleMouseAsync(window);
+
         glfwSwapBuffers(window);    // End of the render call.  This is where it swaps the screens (One screen you view, the other it draws to.)
         glfwPollEvents();
 
-        //std::cout << "Camera: "
-        //    << cameraEye.x << ", "
-        //    << cameraEye.y << ", "
-        //    << cameraEye.z << std::endl;
-
         std::stringstream ssTitle;
         ssTitle << "Camera: "
-            << cameraEye.x << ", "
-            << cameraEye.y << ", "
-            << cameraEye.z << std::endl;
+            << ::g_pFlyCamera->getEyeLocation().x << ", "
+            << ::g_pFlyCamera->getEyeLocation().y << ", "
+            << ::g_pFlyCamera->getEyeLocation().z << std::endl;
+    //    ssTitle << "Camera: "
+    //        << cameraEye.x << ", "
+    //        << cameraEye.y << ", "
+    //        << cameraEye.z << std::endl;
         glfwSetWindowTitle(window, ssTitle.str().c_str());
 
     }// End of the draw loop
+    
+    delete ::g_pFlyCamera;
 
     glfwDestroyWindow(window);
 

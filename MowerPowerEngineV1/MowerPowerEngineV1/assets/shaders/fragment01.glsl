@@ -2,12 +2,18 @@
 // Pixel fragment
 in vec3 color;
 
+uniform vec4 objectColour;
+uniform bool bUseObjectColour;
+
 out vec4 fragment;
 
 void main()
 {
 	vec3 finalColour = color;
-	finalColour *= 0.001f;
-	finalColour.g = 1.0f;
+	if( bUseObjectColou r)
+	{
+		vec3 finalColour = objectColour.rgb;
+	}
+
 	fragment = vec4(finalColour, 1.0);
 }

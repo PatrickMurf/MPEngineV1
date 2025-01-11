@@ -15,7 +15,11 @@ struct sMesh
 
 	glm::vec3 positionXYZ;				// Position in 3D space
 	glm::vec3 rotationEulerXYZ;			// Rotation in 3D space
-	float uniformScale;					// Scale of object
+	float uniformScale = 1.0f;					// Scale of object
 
 	glm::vec4 objectColourRGBA;						// Colors: Red, Green, Blue, Alpha
+
+	bool bOverrideObjectColour = true;
+	bool bIsWireframe = false;
+	bool bIsVisible = true;
 };

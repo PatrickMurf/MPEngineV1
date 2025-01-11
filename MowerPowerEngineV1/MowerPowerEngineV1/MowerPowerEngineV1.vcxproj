@@ -139,16 +139,21 @@
   <ItemGroup>
     <ClCompile Include="Basic_Shader_Manager\cShader.cpp" />
     <ClCompile Include="Basic_Shader_Manager\cShaderManager.cpp" />
+    <ClCompile Include="cBasicFlyCamera\cBasicFlyCamera.cpp" />
+    <ClCompile Include="cBasicFlyCamera\mouse_keyboard_async.cpp" />
     <ClCompile Include="cVAOManager\cVAOManager.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="PlyFileLoaders.cpp" />
+    <ClCompile Include="sharedThings.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Basic_Shader_Manager\cShaderManager.h" />
+    <ClInclude Include="cBasicFlyCamera\cBasicFlyCamera.h" />
     <ClInclude Include="cVAOManager\cVAOManager.h" />
     <ClInclude Include="GLCommon.h" />
     <ClInclude Include="PlyFileLoaders.h" />
+    <ClInclude Include="sharedThings.h" />
     <ClInclude Include="sMesh.h" />
   </ItemGroup>
   <ItemGroup>

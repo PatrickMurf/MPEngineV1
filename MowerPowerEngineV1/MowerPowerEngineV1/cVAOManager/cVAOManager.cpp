@@ -246,14 +246,18 @@ bool cVAOManager::LoadModelIntoVAO(
 	glEnableVertexAttribArray(vpos_location);	// vPos
 	glVertexAttribPointer(vpos_location, 3,		// vPos
 		GL_FLOAT, GL_FALSE,
-		sizeof(float) * 6,
-		(void*)0);
+		//sizeof(float) * 6,						// Stride	(Needs to remember space for XYZ, RGB, thus 6.)
+		sizeof(sVertex_SHADER_FORMAT_xyz_rgb),
+		//(void*)0);								// Offset	(Where it starts into the structure.  So X is in position 0; because vec3 XYZ, vec3 RGB)
+		(void*)offsetof(sVertex_SHADER_FORMAT_xyz_rgb, x) );
 
 	glEnableVertexAttribArray(vcol_location);	// vCol
 	glVertexAttribPointer(vcol_location, 3,		// vCol
 		GL_FLOAT, GL_FALSE,
-		sizeof(float) * 6,
-		(void*)(sizeof(float) * 3));
+		//sizeof(float) * 6,
+		sizeof(sVertex_SHADER_FORMAT_xyz_rgb),
+		//(void*)(sizeof(float) * 3));
+		(void*)offsetof(sVertex_SHADER_FORMAT_xyz_rgb, r));
 
 	// Now that all the parts are set up, set the VAO to zero
 	glBindVertexArray(0);
